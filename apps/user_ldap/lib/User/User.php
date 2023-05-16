@@ -184,8 +184,16 @@ class User {
 			$displayName = (string)$ldapEntry[$attr][0];
 		}
 		$attr = strtolower($this->connection->ldapUserDisplayName2);
-		if (isset($ldapEntry[$attr])) {
+		if (isset($ldapEntry[$attr])) { // attribute found
 			$displayName2 = (string)$ldapEntry[$attr][0];
+		} elseif (strpos($attr,"++") !== false) {
+			// list of attributes
+			foreach (explode("++",$attr) as $attr2) {
+				if (isset($ldapEntry[$attr2])) {
+					$displayName2 .= (string)$ldapEntry[$attr2][0] ." ";
+				}
+				$displayName2 = trim($displayName2);
+			}
 		}
 		if ($displayName !== '') {
 			$this->composeAndStoreDisplayName($displayName, $displayName2);
