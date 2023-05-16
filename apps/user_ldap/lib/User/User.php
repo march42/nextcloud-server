@@ -190,9 +190,8 @@ class User {
 			// list of attributes
 			foreach (explode("++",$attr) as $attr2) {
 				if (isset($ldapEntry[$attr2])) {
-					$displayName2 .= (string)$ldapEntry[$attr2][0] ." ";
+					$displayName2 .= (empty($displayName2) ?"" :" ") . ((string)$ldapEntry[$attr2][0]);
 				}
-				$displayName2 = trim($displayName2);
 			}
 		}
 		if ($displayName !== '') {
