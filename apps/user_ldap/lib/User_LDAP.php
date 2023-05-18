@@ -482,9 +482,14 @@ class User_LDAP extends BackendUtility implements IUserBackend, UserInterface, I
 		$additionalAttribute = $this->access->connection->ldapUserDisplayName2;
 		$displayName2 = '';
 		if ($additionalAttribute !== '') {
-			$displayName2 = $this->access->readAttribute(
-				$this->access->username2dn($uid),
-				$additionalAttribute);
+			foreach (explode("++",$additionalAttribute) as $additionalAttribute) {
+				$addThis = $this->access->readAttribute(
+					$this->access->username2dn($uid),
+					$additionalAttribute);
+				if (isset($addThis[0])) {
+					$displayName2 .= (empty($displayName2) ?"" :" ") . ((string)$addThis[0]);
+				}
+			}
 		}
 
 		$displayName = $this->access->readAttribute(
