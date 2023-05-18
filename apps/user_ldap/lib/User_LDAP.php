@@ -478,31 +478,39 @@ class User_LDAP extends BackendUtility implements IUserBackend, UserInterface, I
 			return $displayName;
 		}
 
+		$userDN = $this->access->username2dn($uid); // needed multiple times
+		$displayName = $displayName2 = ''; // prepare empty
+
 		//Check whether the display name is configured to have a 2nd feature
-		$additionalAttribute = $this->access->connection->ldapUserDisplayName2;
-		$displayName2 = '';
-		if ($additionalAttribute !== '') {
-			foreach (explode("++",$additionalAttribute) as $additionalAttribute) {
-				$addThis = $this->access->readAttribute(
-					$this->access->username2dn($uid),
-					$additionalAttribute);
-				if (isset($addThis[0])) {
-					$displayName2 .= (empty($displayName2) ?"" :" ") . ((string)$addThis[0]);
+		$attr = $this->access->connection->ldapUserDisplayName2;
+		if ($attr !== '') {
+			$addThis = $this->access->readAttribute($userDN,$attr);
+			if (isset($addThis[0])) { // attribute found
+				$displayName2 = (string)$addThis[0];
+			} elseif (strpos($attr,"++") !== false) {
+				foreach (explode("++",$attr) as $attr) {
+					$addThis = $this->access->readAttribute($userDN,$attr);
+					if (isset($addThis[0])) {
+						$displayName2 .= (empty($displayName2) ?"" :" ") . ((string)$addThis[0]);
+					}
 				}
 			}
 		}
 
-		$displayName = $this->access->readAttribute(
-			$this->access->username2dn($uid),
-			$this->access->connection->ldapUserDisplayName);
-
-		if ($displayName && (count($displayName) > 0)) {
-			$displayName = $displayName[0];
-
-			if (is_array($displayName2)) {
-				$displayName2 = count($displayName2) > 0 ? $displayName2[0] : '';
+		$attr = $this->access->connection->ldapUserDisplayName;
+		$addThis = $this->access->readAttribute($userDN,$attr);
+		if (isset($addThis[0])) { // attribute found
+			$displayName = (string)$addThis[0];
+		} elseif (strpos($attr,"++") !== false) {
+			foreach (explode("++",$attr) as $attr) {
+				$addThis = $this->access->readAttribute($userDN,$attr);
+				if (isset($addThis[0])) {
+					$displayName .= (empty($displayName) ?"" :" ") . ((string)$addThis[0]);
+				}
 			}
+		}
 
+		if ($displayName) { // have a displayName
 			$user = $this->access->userManager->get($uid);
 			if ($user instanceof User) {
 				$displayName = $user->composeAndStoreDisplayName($displayName, $displayName2);

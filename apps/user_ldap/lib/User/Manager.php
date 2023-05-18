@@ -164,8 +164,11 @@ class Manager {
 			$this->access->getConnection()->ldapAttributeBiography,
 		];
 		// parse attribute list and add each
-		foreach (explode("++",$this->access->getConnection()->ldapUserDisplayName2) as $attr2) {
-			array_push($attributes,$attr2);
+		foreach (explode("++",$this->access->getConnection()->ldapUserDisplayName) as $attr) {
+			array_push($attributes,$attr);
+		}
+		foreach (explode("++",$this->access->getConnection()->ldapUserDisplayName2) as $attr) {
+			array_push($attributes,$attr);
 		}
 
 		$homeRule = (string)$this->access->getConnection()->homeFolderNamingRule;
